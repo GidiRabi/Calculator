@@ -31,12 +31,12 @@ public class CalculatorGUI extends JFrame {
 
         // Buttons
         String[] buttonLabels = {
-                "(", ")", "^2", "ln", "log",
+                "(", ")", "<html>x<sup>2</sup></html>", "ln(", "<html>log<sub>10</sub>(</html>",
                 "sin(", "cos(", "tan(", "sqrt(", "^",
                 "7", "8", "9", "DEL", "AC",
-                "4", "5", "6", "*", "/",
+                "4", "5", "6", "\u00D7", "/",
                 "1", "2", "3", "+", "-",
-                "0", ".", "*10^x", "Ans", "="
+                "0", ".", "<html>x10<sup><i>x</i></sup></html>", "Ans", "="
         };
 
 
@@ -59,15 +59,22 @@ public class CalculatorGUI extends JFrame {
         add(buttonsPanel, BorderLayout.CENTER);
 
         // Set frame properties
-        setSize(300, 400);
+        setSize(315, 400);
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
     // Action Listener for buttons
     private class ButtonClickListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
 
+            if(displayField.getText().equals("Math Error , [AC] : Cancel")){
+                if(((JButton) e.getSource()).getText().equals("AC")){
+                    displayField.setText("");
+                }
+                return;
+            }
 
             if (((JButton) e.getSource()).getText().equals("=")) {
                 String currentText = displayField.getText();
@@ -75,6 +82,7 @@ public class CalculatorGUI extends JFrame {
                 displayField.setText(calculator.calculate());
                 return;
             }
+
 
             //if AC clear the screen
             if (((JButton) e.getSource()).getText().equals("AC")) {

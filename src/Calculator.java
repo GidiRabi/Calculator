@@ -122,7 +122,7 @@ public class Calculator {
     //function to check if the character is an operator
 
     public boolean isOperator(char c) {
-        return c == '+' || c == '-' || c == '*' || c == '/' || c == '^' || c == '.';
+        return c == '+' || c == '-' || c == '\u00D7' || c == '/' || c == '^' || c == '.';
     }
     //function isValid to check if the expression in the calculation is valid
     //cant be more than 1 operator in a row, a number cant have 2 dots, every open parenthesis should have a close parenthesis
