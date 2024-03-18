@@ -95,29 +95,13 @@ public class Calculator {
                 stack.push(i);
             } else if (c == ')') {
                 int start = stack.pop();
-                String simplified = simplifyExpression(currentText.substring(start + 1, i));
-                currentText = currentText.substring(0, start) + simplified + currentText.substring(i + 1);
-                i = start + simplified.length();
+
             }
         }
         return currentText;
 
     }
 
-    //function to simplify the expression between 2 parenthesis
-    public String simplifyExpression(String currentText) {
-        if (currentText.contains("sin(")) {
-            return toString(sin(toInt(simplify(currentText.substring(4, currentText.length() - 1)))));
-        } else if (currentText.contains("cos(")) {
-            return toString(cos(toInt(simplify(currentText.substring(4, currentText.length() - 1)))));
-        } else if (currentText.contains("tan(")) {
-            return toString(tan(toInt(simplify(currentText.substring(4, currentText.length() - 1)))));
-        } else if (currentText.contains("sqrt(")) {
-            return toString(sqrt(toInt(simplify(currentText.substring(5, currentText.length() - 1)))));
-        } else {
-            return toString(getAns(currentText));
-        }
-    }
 
     //function to check if the character is an operator
 
