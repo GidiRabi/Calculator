@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Objects;
 
 public class CalculatorGUI extends JFrame {
     private JTextField displayField;
@@ -31,12 +32,12 @@ public class CalculatorGUI extends JFrame {
 
         // Buttons
         String[] buttonLabels = {
-                "(", ")", "<html>x<sup>2</sup></html>", "ln(", "<html>log<sub>10</sub>(</html>",
+                "(", ")", "x²", "ln(", "log₁₀(",
                 "sin(", "cos(", "tan(", "sqrt(", "^",
                 "7", "8", "9", "DEL", "AC",
-                "4", "5", "6", "\u00D7", "/",
+                "4", "5", "6", "×", "/",
                 "1", "2", "3", "+", "-",
-                "0", ".", "<html>x10<sup><i>x</i></sup></html>", "Ans", "="
+                "0", ".", "×10ˣ", "Ans", "="
         };
 
 
@@ -94,11 +95,42 @@ public class CalculatorGUI extends JFrame {
             //if DEL clear the screen
             if (((JButton) e.getSource()).getText().equals("DEL")) {
                 String currentText = displayField.getText();
-                currentText = currentText.substring(0, currentText.length() - 1);
+                if(Objects.equals(currentText, "")){
+                    return;
+                }
+
+                /* if the last chars are ln( or sin( or cos( or tan( or sqrt( or log10(...
+                then delete the expression
+                else delete 1 char
+                */
+                if (currentText.endsWith("sin(") || currentText.endsWith("cos(") || currentText.endsWith("tan(") || currentText.endsWith("×10ˣ")) {
+                    currentText = currentText.substring(0, currentText.length() - 4);
+                } else if (currentText.endsWith("sqrt(")){
+                    currentText = currentText.substring(0, currentText.length() - 5);
+                } else if (currentText.endsWith("ln(") || currentText.endsWith("Ans") ) {
+                    currentText = currentText.substring(0, currentText.length() - 3);
+                }else if (currentText.endsWith("log₁₀(")) {
+                    currentText = currentText.substring(0, currentText.length() - 6);
+                }
+                else{
+                    currentText = currentText.substring(0, currentText.length() - 1);
+                }
                 displayField.setText(currentText);
                 return;
             }
 
+            //if x² is being pressed then add ^2 to the display,
+            if (((JButton) e.getSource()).getText().equals("x²")) {
+                String currentText = displayField.getText();
+                displayField.setText(currentText + "^(2)");
+                return;
+            }
+            //if ×10ˣ is pressed then add ×10^ to the display
+            if (((JButton) e.getSource()).getText().equals("×10ˣ")) {
+                String currentText = displayField.getText();
+                displayField.setText(currentText + "×10^(");
+                return;
+            }
 
             String buttonLabel = ((JButton) e.getSource()).getText();
             String currentText = displayField.getText();
