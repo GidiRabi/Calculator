@@ -12,12 +12,6 @@ public class CalculatorGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-//        // Display Field
-//        displayField = new JTextField();
-//        displayField.setEditable(false);
-//        displayField.setHorizontalAlignment(JTextField.RIGHT);
-//        add(displayField, BorderLayout.NORTH);
-
         // Display Field
         displayField = new JTextField();
         displayField.setEditable(false);
@@ -65,6 +59,10 @@ public class CalculatorGUI extends JFrame {
         setVisible(true);
     }
 
+    String getDisplayFieldText() {
+        return displayField.getText();
+    }
+
     // Action Listener for buttons
     private class ButtonClickListener implements ActionListener {
 
@@ -103,16 +101,14 @@ public class CalculatorGUI extends JFrame {
                 then delete the expression
                 else delete 1 char
                 */
-                if (currentText.endsWith("sin(") || currentText.endsWith("cos(") || currentText.endsWith("tan(") || currentText.endsWith("×10ˣ")) {
+                if (currentText.endsWith("sin(") || currentText.endsWith("cos(") || currentText.endsWith("tan(")
+                         || currentText.endsWith("log(")) {
                     currentText = currentText.substring(0, currentText.length() - 4);
                 } else if (currentText.endsWith("sqrt(")){
                     currentText = currentText.substring(0, currentText.length() - 5);
                 } else if (currentText.endsWith("ln(") || currentText.endsWith("Ans") ) {
                     currentText = currentText.substring(0, currentText.length() - 3);
-                }else if (currentText.endsWith("log₁₀(")) {
-                    currentText = currentText.substring(0, currentText.length() - 6);
-                }
-                else{
+                } else{
                     currentText = currentText.substring(0, currentText.length() - 1);
                 }
                 displayField.setText(currentText);
@@ -129,6 +125,12 @@ public class CalculatorGUI extends JFrame {
             if (((JButton) e.getSource()).getText().equals("×10ˣ")) {
                 String currentText = displayField.getText();
                 displayField.setText(currentText + "×10^(");
+                return;
+            }
+            //if log10 is pressed then add log to the display
+            if (((JButton) e.getSource()).getText().equals("log₁₀(")) {
+                String currentText = displayField.getText();
+                displayField.setText(currentText + "log(");
                 return;
             }
 

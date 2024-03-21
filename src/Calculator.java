@@ -1,5 +1,4 @@
-import java.util.ArrayList;
-import java.util.Stack;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,7 +8,7 @@ public class Calculator {
     private static Calculator instance;
     private CalculatorGUI calculatorGUI; // CalculatorGUI instance
     public static String text = "";
-    public static String Ans = "0";
+    public static String Ans = null;
 
     // Private constructor to prevent instantiation from outside
     Calculator(String txt) {
@@ -46,219 +45,132 @@ public class Calculator {
             return "Math Error , [AC] : Cancel";
         }
         ArrayList<String> elements = parseExpression(text);
-        ArrayList<String> simplified = simplifyParanthesis(elements);
-        printElements(simplified);
+        printElements(elements);
+        text = evaluate(elements);
+        Ans = text;
         return text;
     }
 
-    //function that takes everything between 2 paranthesis and simplifies it to a number, if its sin( or cos( or tan( or sqrt(
-    //then it will only take the number inside the paranthesis and apply the function to it and keep the sin( or cos( or tan( or sqrt(
-    //the expression is valid so we dont need to check for errors
-    //the function will do for example from (,12,+,4,*,6,) to (,12,+,24,) to (,36,)
 
-    public static ArrayList<String> simplifyParanthesis(ArrayList<String> elements) {
-        ArrayList<String> simplified = new ArrayList<>();
-        int i = 0;
-        while (i < elements.size()) {
-            if (elements.get(i).equals("(")) {
-                int j = i + 1;
-                int count = 1;
-                while (count != 0 && j < elements.size()) {
-                    if (elements.get(j).equals("(")) {
-                        count++;
-                    } else if (elements.get(j).equals(")")) {
-                        count--;
-                    }
-                    j++;
-                }
-                if (count != 0) {
-                    throw new IllegalArgumentException("Unbalanced parentheses in the expression.");
-                }
-                ArrayList<String> subExpression = new ArrayList<>(elements.subList(i + 1, j - 1));
-                ArrayList<String> simplifiedSubExpression = simplifyParanthesis(subExpression);
-                double result = evaluate(simplifiedSubExpression);
-                simplified.add(Double.toString(result));
-                i = j;
-            } else if (elements.get(i).equals("sin(") || elements.get(i).equals("cos(") || elements.get(i).equals("tan(") || elements.get(i).equals("sqrt(")) {
-                simplified.add(elements.get(i));
-                i++;
-                simplified.add(elements.get(i));
-                i++;
-            } else {
-                simplified.add(elements.get(i));
-                i++;
-            }
-        }
-        return simplified;
-    }
-
-    public static double evaluate(ArrayList<String> expression) {
+    //using shunting yard algorithm to evaluate the expression
+    public static String evaluate(ArrayList<String> expression) {
         if (expression.isEmpty()) {
             throw new IllegalArgumentException("Expression cannot be empty.");
         }
 
-        Stack<Double> stack = new Stack<>();
+        Stack<String> stack = new Stack<>();
+        LinkedList<String> output = new LinkedList<>();
 
-        for (String token : expression) {
-            switch (token) {
-                case "+":
-                    if (stack.size() < 2) {
-                        throw new IllegalArgumentException("Invalid expression.");
-                    }
-                    stack.push(stack.pop() + stack.pop());
-                    break;
-                case "-":
-                    if (stack.size() < 2) {
-                        throw new IllegalArgumentException("Invalid expression.");
-                    }
-                    double subtractor = stack.pop();
-                    stack.push(stack.pop() - subtractor);
-                    break;
-                case "×":
-                    if (stack.size() < 2) {
-                        throw new IllegalArgumentException("Invalid expression.");
-                    }
-                    stack.push(stack.pop() * stack.pop());
-                    break;
-                case "/":
-                    if (stack.size() < 2) {
-                        throw new IllegalArgumentException("Invalid expression.");
-                    }
-                    double divisor = stack.pop();
-                    if (divisor == 0) {
-                        throw new ArithmeticException("Cannot divide by zero.");
-                    }
-                    stack.push(stack.pop() / divisor);
-                    break;
-                case "sin(":
-                    if (stack.isEmpty()) {
-                        throw new IllegalArgumentException("Invalid expression.");
-                    }
-                    stack.push(Math.sin(stack.pop()));
-                    break;
-                case "cos(":
-                    if (stack.isEmpty()) {
-                        throw new IllegalArgumentException("Invalid expression.");
-                    }
-                    stack.push(Math.cos(stack.pop()));
-                    break;
-                case "tan(":
-                    if (stack.isEmpty()) {
-                        throw new IllegalArgumentException("Invalid expression.");
-                    }
-                    stack.push(Math.tan(stack.pop()));
-                    break;
-                case "sqrt(":
-                    if (stack.isEmpty()) {
-                        throw new IllegalArgumentException("Invalid expression.");
-                    }
-                    stack.push(Math.sqrt(stack.pop()));
-                    break;
-                case "ln(":
-                    if (stack.isEmpty()) {
-                        throw new IllegalArgumentException("Invalid expression.");
-                    }
-                    //push ln to the stack
-                    stack.push(Math.log(stack.pop()));
-                    break;
-                case "log₁₀(":
-                    if (stack.isEmpty()) {
-                        throw new IllegalArgumentException("Invalid expression.");
-                    }
-                    //push log₁₀ to the stack
-                    stack.push(Math.log10(stack.pop()));
-                    break;
-                default:
-                    stack.push(Double.parseDouble(token));
-                    break;
+        for (String s : expression) {
+            if (!isOperator(s)) {
+                output.add(s);
+            } else if (s.equals("(")) {
+                stack.push(s);
+            } else if (s.equals(")")) {
+                while (!stack.isEmpty() && !stack.peek().equals("(")) {
+                    output.add(stack.pop());
+                }
+                if (!stack.isEmpty()) {
+                    stack.pop();
+                }
+            } else if (isOperator(s)) {
+                while (!stack.isEmpty() && isOperator(stack.peek()) && (precedence(s) <= precedence(stack.peek()))) {
+                    output.add(stack.pop());
+                }
+                stack.push(s);
             }
         }
 
-        if (stack.size() != 1) {
-            throw new IllegalArgumentException("Invalid expression.");
+        while (!stack.isEmpty()) {
+            output.add(stack.pop());
         }
 
-        return stack.pop();
+        //if there is a division by 0 then return error
+        for (int i = output.size() - 1; i > 0 ; i--) {
+            if (output.get(i).equals("/")) {
+                if (output.get(i -1).equals("0")) {
+                    return "Math Error , [AC] : Cancel";
+                }
+            }
+        }
+
+        Stack<Double> resultStack = new Stack<>();
+        while (!output.isEmpty()) {
+            String token = output.poll();
+            if (!isOperator(token)) {
+                resultStack.push(Double.parseDouble(token));
+            } else {
+                double a = resultStack.pop();
+                double b;
+                switch (token) {
+                    case "+":
+                        b = resultStack.pop();
+                        resultStack.push(a + b);
+                        break;
+                    case "-":
+                        b = resultStack.pop();
+                        resultStack.push(b - a);
+                        break;
+                    case "×":
+                        b = resultStack.pop();
+                        resultStack.push(a * b);
+                        break;
+                    case "/":
+                        b = resultStack.pop();
+                        resultStack.push(b / a);
+                        break;
+                    case "^":
+                        b = resultStack.pop();
+                        resultStack.push(Math.pow(b, a));
+                        break;
+                    case "sin":
+                        resultStack.push(Math.sin(a));
+                        break;
+                    case "cos":
+                        resultStack.push(Math.cos(a));
+                        break;
+                    case "tan":
+                        resultStack.push(Math.tan(a));
+                        break;
+                    case "sqrt":
+                        resultStack.push(Math.sqrt(a));
+                        break;
+                    case "ln":
+                        resultStack.push(Math.log(a));
+                        break;
+                    case "log":
+                        resultStack.push(Math.log10(a));
+                        break;
+                }
+            }
+        }
+
+        //if the number is a form of x.0 then convert it to x else keep it as it is
+        double result = resultStack.pop();
+        if (result % 1 == 0) {
+            return String.valueOf(result).substring(0, String.valueOf(result).length() - 2);
+        } else {
+            return String.valueOf(result);
+        }
     }
 
-//    public static ArrayList<String> simplifyParanthesis(ArrayList<String> elements) {
-//        ArrayList<String> simplified = new ArrayList<>();
-//        int i = 0;
-//        while (i < elements.size()) {
-//            if (elements.get(i).equals("(")) {
-//                int j = i + 1;
-//                int count = 1;
-//                while (count != 0) {
-//                    if (elements.get(j).equals("(")) {
-//                        count++;
-//                    } else if (elements.get(j).equals(")")) {
-//                        count--;
-//                    }
-//                    j++;
-//                }
-//                ArrayList<String> subExpression = new ArrayList<>(elements.subList(i + 1, j - 1));
-//                ArrayList<String> simplifiedSubExpression = simplifyParanthesis(subExpression);
-//                double result = evaluate(simplifiedSubExpression);
-//                simplified.add(Double.toString(result));
-//                i = j;
-//            } else if (elements.get(i).equals("sin(") || elements.get(i).equals("cos(") || elements.get(i).equals("tan(") || elements.get(i).equals("sqrt(")) {
-//                simplified.add(elements.get(i));
-//                i++;
-//                simplified.add(elements.get(i));
-//                i++;
-//            } else {
-//                simplified.add(elements.get(i));
-//                i++;
-//            }
-//        }
-//        return simplified;
-//    }
-//
-//
-//    public static double evaluate(ArrayList<String> expression) {
-//    Stack<Double> stack = new Stack<>();
-//
-//    for (String token : expression) {
-//        switch (token) {
-//            case "+":
-//                stack.push(stack.pop() + stack.pop());
-//                break;
-//            case "-":
-//                double subtractor = stack.pop();
-//                stack.push(stack.pop() - subtractor);
-//                break;
-//            case "*":
-//                stack.push(stack.pop() * stack.pop());
-//                break;
-//            case "/":
-//                double divisor = stack.pop();
-//                stack.push(stack.pop() / divisor);
-//                break;
-//            case "sin(":
-//                stack.push(Math.sin(stack.pop()));
-//                break;
-//            case "cos(":
-//                stack.push(Math.cos(stack.pop()));
-//                break;
-//            case "tan(":
-//                stack.push(Math.tan(stack.pop()));
-//                break;
-//            case "sqrt(":
-//                stack.push(Math.sqrt(stack.pop()));
-//                break;
-//            default:
-//                stack.push(Double.parseDouble(token));
-//                break;
-//        }
-//    }
-//
-//    return stack.pop();
-//}
+    private static int intValue(Double peek) {
+        return (int)(double)peek;
+    }
+
+    public static int precedence(String operator) {
+        return switch (operator) {
+            case "+", "-" -> 1;
+            case "*", "/" -> 2;
+            case "sin", "cos", "tan", "sqrt", "log", "ln" -> 3;
+            case "^" -> 4;
+            default -> 0; // Default precedence for other operators or functions
+        };
+    }
 
     public static ArrayList<String> parseExpression(String text) {
         ArrayList<String> elements = new ArrayList<>();
-        Pattern pattern = Pattern.compile("\\d+\\.?\\d*|[-+×/^()]|\\b(sin|cos|tan|sqrt)\\(");
-        Matcher matcher = pattern.matcher(text);
+        Pattern pattern = Pattern.compile("\\d+\\.?\\d*|[-+×/^()]|\\b(sin|cos|tan|sqrt|ln|log)\\b|\\(");        Matcher matcher = pattern.matcher(text);
 
         while (matcher.find()) {
             elements.add(matcher.group());
@@ -277,20 +189,26 @@ public class Calculator {
 
 
     //function to check if the character is an operator
-
-    public boolean isOperator(char c) {
-        return c == '+' || c == '-' || c == '\u00D7' || c == '/' || c == '^' || c == '.';
+    public static boolean isOperator(String c) {
+        return Objects.equals(c, "sin") || Objects.equals(c, "cos") || Objects.equals(c, "tan") ||
+                Objects.equals(c, "sqrt") || Objects.equals(c, "log") || Objects.equals(c, "ln") ||
+                 Objects.equals(c, "+") || Objects.equals(c, "-") || Objects.equals(c, "×") ||
+                Objects.equals(c, "/") || Objects.equals(c, "^")
+                || Objects.equals(c, "(") || Objects.equals(c, ")");
     }
     //function isValid to check if the expression in the calculation is valid
     //cant be more than 1 operator in a row, a number cant have 2 dots, every open parenthesis should have a close parenthesis
     public boolean isValid(String currentText){
         Stack<Character> stack = new Stack<Character>();
-
+        //if text contains Ans and Ans == NULL then return false
+        if(currentText.contains("Ans") && Ans == null){
+            return false;
+        }
         for(int i = 0; i< currentText.length() ; i++){
             char c = currentText.charAt(i);
             if(c == '('){
                 if(i != currentText.length()-1){
-                    if( currentText.charAt(i+1) == ')' || isOperator(currentText.charAt(i+1)) ){
+                    if( currentText.charAt(i+1) == ')' || isOperator(currentText.substring(i+1, Math.min(i+4, currentText.length()))) ){
                         return false;
                     }
                 }
@@ -307,24 +225,66 @@ public class Calculator {
                 }
                 stack.pop();
             }
-            else if(isOperator(c)){
+            else if(isOperator(String.valueOf(c))){
                 if(i == 0 || i == currentText.length()-1){
                     return false;
                 }
-                if(isOperator(currentText.charAt(i-1)) || isOperator(currentText.charAt(i+1))){
+                if(isOperator(currentText.substring(Math.max(0, i-1), i+1)) || isOperator(currentText.substring(i+1, Math.min(i+4, currentText.length())))){
                     return false;
                 }
             }
             else if(c == 's' || c == 'c' || c == 't'){
-                if(i + 3 < currentText.length() && isOperator(currentText.charAt(i+3))){
+                if(i + 3 < currentText.length() && isOperator(currentText.substring(i, i+2))){
                     return false;
                 }
             }
         }
         return stack.isEmpty();
     }
+//    public boolean isValid(String currentText){
+//        Stack<Character> stack = new Stack<Character>();
+//        //if text contains Ans and Ans == NULL then return false
+//        if(currentText.contains("Ans") && Ans == null){
+//            return false;
+//        }
+//        for(int i = 0; i< currentText.length() ; i++){
+//            char c = currentText.charAt(i);
+//            if(c == '('){
+//                if(i != currentText.length()-1){
+//                    if( currentText.charAt(i+1) == ')' || isOperator(String.valueOf(currentText.charAt(i+1))) ){
+//                        return false;
+//                    }
+//                }
+//                stack.push(c);
+//            }
+//            else if(c == ')'){
+//                if(i != currentText.length()-1){
+//                    if( currentText.charAt(i+1) >= '0' && currentText.charAt(i+1) <= '9' ){
+//                        return false;
+//                    }
+//                }
+//                if(stack.isEmpty()){
+//                    return false;
+//                }
+//                stack.pop();
+//            }
+//            else if(isOperator(String.valueOf(c))){
+//                if(i == 0 || i == currentText.length()-1){
+//                    return false;
+//                }
+//                if(isOperator(String.valueOf(currentText.charAt(i-1))) || isOperator(String.valueOf(currentText.charAt(i+1)))){
+//                    return false;
+//                }
+//            }
+//            else if(c == 's' || c == 'c' || c == 't'){
+//                if(i + 3 < currentText.length() && isOperator(String.valueOf(currentText.charAt(i+3)))){
+//                    return false;
+//                }
+//            }
+//        }
+//        return stack.isEmpty();
+//    }
 
-    //function to convert int to string
 
     public String toString(double number) {
         return Double.toString(number);
