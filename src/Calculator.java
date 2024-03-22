@@ -29,13 +29,6 @@ public class Calculator {
     }
 
 
-    //gets the String from displayed text and computes the final answer
-    public int getAns(String currentText) {
-        char opertaions[]; //array of operations from currentText
-
-        return 0; // Placeholder
-    }
-
     public String lastAns(){
         return Ans;
     }
@@ -45,7 +38,7 @@ public class Calculator {
             return "Math Error , [AC] : Cancel";
         }
         ArrayList<String> elements = parseExpression(text);
-        printElements(elements);
+        //printElements(elements);
         text = evaluate(elements);
         Ans = text;
         return text;
@@ -55,7 +48,7 @@ public class Calculator {
     //using shunting yard algorithm to evaluate the expression
     public static String evaluate(ArrayList<String> expression) {
         if (expression.isEmpty()) {
-            throw new IllegalArgumentException("Expression cannot be empty.");
+            return "";
         }
 
         Stack<String> stack = new Stack<>();
@@ -85,14 +78,14 @@ public class Calculator {
             output.add(stack.pop());
         }
 
-        //if there is a division by 0 then return error
-        for (int i = output.size() - 1; i > 0 ; i--) {
-            if (output.get(i).equals("/")) {
-                if (output.get(i -1).equals("0")) {
-                    return "Math Error , [AC] : Cancel";
-                }
-            }
-        }
+//        //if there is a division by 0 then return error
+//        for (int i = output.size() - 1; i > 0 ; i--) {
+//            if (output.get(i).equals("/")) {
+//                if (output.get(i -1).equals("0")) {
+//                    return "Math Error , [AC] : Cancel";
+//                }
+//            }
+//        }
 
         Stack<Double> resultStack = new Stack<>();
         while (!output.isEmpty()) {
@@ -143,6 +136,20 @@ public class Calculator {
                         break;
                 }
             }
+
+
+            for (int i = 0; i < stack.size(); i++) {
+                String tmp = stack.get(i);
+                if (tmp.equals("/")) {
+                    if (i + 1 < stack.size()) {
+                        String nextToken = stack.get(i + 1);
+                        if (nextToken.equals("0") || nextToken.equals("sin 0") || nextToken.equals("cos π/2") || nextToken.equals("tan π/2") || nextToken.equals("ln 1") || nextToken.equals("log₁₀ 1")) {
+                            return "Math Error , [AC] : Cancel";
+                        }
+                    }
+                }
+            }
+
         }
 
         //if the number is a form of x.0 then convert it to x else keep it as it is
@@ -196,94 +203,71 @@ public class Calculator {
                 Objects.equals(c, "/") || Objects.equals(c, "^")
                 || Objects.equals(c, "(") || Objects.equals(c, ")");
     }
-    //function isValid to check if the expression in the calculation is valid
-    //cant be more than 1 operator in a row, a number cant have 2 dots, every open parenthesis should have a close parenthesis
-    public boolean isValid(String currentText){
+    /**
+     * This method checks if the given mathematical expression is valid.
+     * It checks for the following conditions:
+     * - If the expression contains "Ans" and Ans is null, it returns false.
+     * - If there is an open parenthesis, it checks if the next character is a close parenthesis or an operator, in which case it returns false.
+     * - If there is a close parenthesis, it checks if the next character is a number, in which case it returns false. It also checks if there is no corresponding open parenthesis, in which case it returns false.
+     * - If there is an operator, it checks if it is at the start or end of the expression, in which case it returns false. It also checks if there is another operator immediately before or after it, in which case it returns false.
+     * - If there is a 's', 'c', or 't', it checks if it is part of a valid operator (sin, cos, tan), in which case it returns false.
+     * - If there is a 'l', it checks if it is part of a valid operator (log, ln), in which case it returns false.
+     * - If all checks pass, it returns true if all open parentheses have corresponding close parentheses, and false otherwise.
+     *
+     * @param currentText The mathematical expression to check.
+     * @return true if the expression is valid, false otherwise.
+     */
+    public boolean isValid(String currentText) {
         Stack<Character> stack = new Stack<Character>();
         //if text contains Ans and Ans == NULL then return false
-        if(currentText.contains("Ans") && Ans == null){
+        if (currentText.contains("Ans") && Ans == null) {
             return false;
         }
-        for(int i = 0; i< currentText.length() ; i++){
+        for (int i = 0; i < currentText.length(); i++) {
             char c = currentText.charAt(i);
-            if(c == '('){
-                if(i != currentText.length()-1){
-                    if( currentText.charAt(i+1) == ')' || isOperator(currentText.substring(i+1, Math.min(i+4, currentText.length()))) ){
+            if (c == '(') {
+                if (i != currentText.length() - 1) {
+                    if (currentText.charAt(i + 1) == ')' || isOperator(currentText.substring(i + 1, Math.min(i + 4, currentText.length())))) {
                         return false;
                     }
                 }
                 stack.push(c);
-            }
-            else if(c == ')'){
-                if(i != currentText.length()-1){
-                    if( currentText.charAt(i+1) >= '0' && currentText.charAt(i+1) <= '9' ){
+            } else if (c == ')') {
+                if (i != currentText.length() - 1) {
+                    if (currentText.charAt(i + 1) >= '0' && currentText.charAt(i + 1) <= '9') {
                         return false;
                     }
                 }
-                if(stack.isEmpty()){
+                if (stack.isEmpty()) {
                     return false;
                 }
                 stack.pop();
-            }
-            else if(isOperator(String.valueOf(c))){
-                if(i == 0 || i == currentText.length()-1){
+            } else if (isOperator(String.valueOf(c))) {
+                if (i == 0 || i == currentText.length() - 1) {
                     return false;
                 }
-                if(isOperator(currentText.substring(Math.max(0, i-1), i+1)) || isOperator(currentText.substring(i+1, Math.min(i+4, currentText.length())))){
+                if (isOperator(currentText.substring(Math.max(0, i - 1), i + 1)) || isOperator(currentText.substring(i + 1, Math.min(i + 4, currentText.length())))) {
                     return false;
                 }
-            }
-            else if(c == 's' || c == 'c' || c == 't'){
-                if(i + 3 < currentText.length() && isOperator(currentText.substring(i, i+2))){
+            } else if (c == 's' || c == 'c' || c == 't') {
+                if (i + 3 < currentText.length() && isOperator(currentText.substring(i, i + 2))) {
                     return false;
+                }
+            } else if (c == 'l') {
+                if (currentText.charAt(i+1) == 'o') {
+                    if (i + 2 < currentText.length() && isOperator(currentText.substring(i, i + 1))) {
+                        return false;
+                    } else if(currentText.charAt(i+1) == 'o'){
+                        if (i + 1 < currentText.length() && isOperator(currentText.substring(i, i))) {
+                            return false;
+                        }
+                    }
                 }
             }
         }
-        return stack.isEmpty();
+            return stack.isEmpty();
     }
-//    public boolean isValid(String currentText){
-//        Stack<Character> stack = new Stack<Character>();
-//        //if text contains Ans and Ans == NULL then return false
-//        if(currentText.contains("Ans") && Ans == null){
-//            return false;
-//        }
-//        for(int i = 0; i< currentText.length() ; i++){
-//            char c = currentText.charAt(i);
-//            if(c == '('){
-//                if(i != currentText.length()-1){
-//                    if( currentText.charAt(i+1) == ')' || isOperator(String.valueOf(currentText.charAt(i+1))) ){
-//                        return false;
-//                    }
-//                }
-//                stack.push(c);
-//            }
-//            else if(c == ')'){
-//                if(i != currentText.length()-1){
-//                    if( currentText.charAt(i+1) >= '0' && currentText.charAt(i+1) <= '9' ){
-//                        return false;
-//                    }
-//                }
-//                if(stack.isEmpty()){
-//                    return false;
-//                }
-//                stack.pop();
-//            }
-//            else if(isOperator(String.valueOf(c))){
-//                if(i == 0 || i == currentText.length()-1){
-//                    return false;
-//                }
-//                if(isOperator(String.valueOf(currentText.charAt(i-1))) || isOperator(String.valueOf(currentText.charAt(i+1)))){
-//                    return false;
-//                }
-//            }
-//            else if(c == 's' || c == 'c' || c == 't'){
-//                if(i + 3 < currentText.length() && isOperator(String.valueOf(currentText.charAt(i+3)))){
-//                    return false;
-//                }
-//            }
-//        }
-//        return stack.isEmpty();
-//    }
+
 
 
     public String toString(double number) {

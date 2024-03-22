@@ -7,6 +7,7 @@ import java.util.Objects;
 public class CalculatorGUI extends JFrame {
     private JTextField displayField;
 
+    private boolean lastEquals = false;
     public CalculatorGUI() {
         super("Scientific Calculator");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -74,11 +75,16 @@ public class CalculatorGUI extends JFrame {
                 }
                 return;
             }
+            if(lastEquals){
+                displayField.setText("");
+                lastEquals = false;
+            }
 
             if (((JButton) e.getSource()).getText().equals("=")) {
                 String currentText = displayField.getText();
                 Calculator calculator = new Calculator(currentText);
                 displayField.setText(calculator.calculate());
+                lastEquals = true;
                 return;
             }
 

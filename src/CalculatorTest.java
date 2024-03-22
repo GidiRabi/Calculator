@@ -71,7 +71,7 @@ class CalculatorTest {
 
     @Test
     void testLongExpression2() {
-        Calculator calculator = new Calculator("sin(0)*cos(0)*tan(0)*sqrt(4)*ln(1)*log(1)*2^3");
+        Calculator calculator = new Calculator("sin(0)×cos(0)×tan(0)*sqrt(4)*ln(1)×log(1)×2^3");
         assertEquals("0", calculator.calculate());
     }
 
@@ -89,7 +89,7 @@ class CalculatorTest {
 
     @Test
     void testLongExpression5() {
-        Calculator calculator = new Calculator("sin(0)+cos(0)*tan(0)-sqrt(4)/ln(1)+log(1)-2^3");
+        Calculator calculator = new Calculator("sin(0)+cos(0)×tan(0)-sqrt(4)/ln(1)+log(1)-2^3");
         assertEquals("-6", calculator.calculate());
     }
 
@@ -125,7 +125,7 @@ class CalculatorTest {
 
     @Test
     void testComplexExpression9() {
-        Calculator calculator = new Calculator("((sin(0)+cos(0))*tan(0))/sqrt(4)");
+        Calculator calculator = new Calculator("((sin(0)+cos(0))×tan(0))/sqrt(4)");
         assertEquals("0", calculator.calculate());
     }
 
