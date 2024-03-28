@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Objects;
 
+
 public class CalculatorGUI extends JFrame {
     private JTextField displayField;
 
@@ -48,7 +49,10 @@ public class CalculatorGUI extends JFrame {
             Dimension buttonSize = new Dimension(50, 50); // Example button size
             button.setPreferredSize(buttonSize);
 
+
             buttonsPanel.add(button);
+
+
         }
 
 
@@ -82,7 +86,8 @@ public class CalculatorGUI extends JFrame {
 
             if (((JButton) e.getSource()).getText().equals("=")) {
                 String currentText = displayField.getText();
-                Calculator calculator = new Calculator(currentText);
+                Calculator calculator = Calculator.getInstance(currentText);
+//                Calculator calculator = new Calculator(currentText);
                 displayField.setText(calculator.calculate());
                 lastEquals = true;
                 return;
@@ -146,10 +151,7 @@ public class CalculatorGUI extends JFrame {
             // Append clicked button label to the display field
             displayField.setText(currentText + buttonLabel);
 
-            currentText = displayField.getText();
-
         }
-
 
     }
 

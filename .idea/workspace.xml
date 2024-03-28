@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7c2a1d08-3c05-4ebc-ab57-93608485ffb2" name="Changes" comment="update">
+    <list default="true" id="7c2a1d08-3c05-4ebc-ab57-93608485ffb2" name="Changes" comment="nc">
       <change beforePath="$PROJECT_DIR$/.idea/copilot/chatSessions/00000000000.xd" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copilot/chatSessions/00000000000.xd" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/copilot/chatSessions/xd.lck" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copilot/chatSessions/xd.lck" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
@@ -51,6 +51,9 @@
       </UrlAndAccount>
     </option>
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar:///Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib/src.zip!/java.base/java/util/Stack.java" root0="SKIP_INSPECTION" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -64,7 +67,7 @@
   "keyToString": {
     "Application.CalculatorGUI.executor": "Run",
     "Downloaded.Files.Path.Enabled": "false",
-    "JUnit.CalculatorTest.executor": "Debug",
+    "JUnit.CalculatorTest.executor": "Run",
     "Repository.Attach.Annotations": "false",
     "Repository.Attach.JavaDocs": "false",
     "Repository.Attach.Sources": "false",
@@ -141,7 +144,10 @@
       <workItem from="1710959068443" duration="3542000" />
       <workItem from="1711016601935" duration="308000" />
       <workItem from="1711034919186" duration="8581000" />
-      <workItem from="1711063754099" duration="2518000" />
+      <workItem from="1711063754099" duration="2537000" />
+      <workItem from="1711114605863" duration="2805000" />
+      <workItem from="1711369704087" duration="259000" />
+      <workItem from="1711644820324" duration="10507000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <option name="closed" value="true" />
@@ -199,7 +205,15 @@
       <option name="project" value="LOCAL" />
       <updated>1711060760065</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="update">
+      <option name="closed" value="true" />
+      <created>1711066359674</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1711066359674</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -207,22 +221,15 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="update" />
-    <option name="LAST_COMMIT_MESSAGE" value="update" />
+    <MESSAGE value="nc" />
+    <option name="LAST_COMMIT_MESSAGE" value="nc" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/CalculatorTest.java</url>
-          <line>67</line>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/Calculator.java</url>
-          <line>89</line>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="Application">
+        <watch expression="output" />
+        <watch expression="output" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

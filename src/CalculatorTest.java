@@ -2,136 +2,173 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CalculatorTest {
+    private static Calculator calculator;
+
+    @BeforeAll
+    static void initAll() {
+        calculator = Calculator.getInstance("");
+    }
 
     @Test
     void testSin() {
-        Calculator calculator = new Calculator("sin(0)");
+        calculator.setExpression("sin(0)");
         assertEquals("0", calculator.calculate());
     }
 
     @Test
     void testCos() {
-        Calculator calculator = new Calculator("cos(0)");
+        calculator.setExpression("cos(0)");
         assertEquals("1", calculator.calculate());
     }
 
     @Test
     void testTan() {
-        Calculator calculator = new Calculator("tan(0)");
+        calculator.setExpression("tan(0)");
         assertEquals("0", calculator.calculate());
     }
 
     @Test
     void testSqrt() {
-        Calculator calculator = new Calculator("sqrt(4)");
+        calculator.setExpression("sqrt(4)");
         assertEquals("2", calculator.calculate());
     }
 
     @Test
     void testLn() {
-        Calculator calculator = new Calculator("ln(1)");
+        calculator.setExpression("ln(1)");
         assertEquals("0", calculator.calculate());
     }
 
     @Test
     void testLog() {
-        Calculator calculator = new Calculator("log₁₀(1)");
+        calculator.setExpression("log₁₀(1)");
         assertEquals("0", calculator.calculate());
     }
 
     @Test
     void testPower() {
-        Calculator calculator = new Calculator("2^3");
+        calculator.setExpression("2^3");
         assertEquals("8", calculator.calculate());
     }
 
     @Test
     void testComplexExpression1() {
-        Calculator calculator = new Calculator("sin(0)+cos(0)");
+        calculator.setExpression("sin(0)+cos(0)");
         assertEquals("1", calculator.calculate());
     }
 
     @Test
     void testComplexExpression2() {
-        Calculator calculator = new Calculator("sqrt(4)^2");
+        calculator.setExpression("sqrt(4)^2");
         assertEquals("4", calculator.calculate());
     }
 
     @Test
     void testComplexExpression3() {
-        Calculator calculator = new Calculator("ln(1+1)");
+        calculator.setExpression("ln(1+1)");
         assertEquals("0.6931471805599453", calculator.calculate());
     }
 
     @Test
     void testLongExpression1() {
-        Calculator calculator = new Calculator("sin(0)+cos(0)+tan(0)+sqrt(4)+ln(1)+log(1)+2^3");
-        assertEquals("10", calculator.calculate());
+        calculator.setExpression("sin(0)+cos(0)+tan(0)+sqrt(4)+ln(1)+log(1)+2^3");
+        assertEquals("11", calculator.calculate());
     }
 
     @Test
     void testLongExpression2() {
-        Calculator calculator = new Calculator("sin(0)×cos(0)×tan(0)*sqrt(4)*ln(1)×log(1)×2^3");
+        calculator.setExpression("sin(0)×cos(0)×tan(0)×sqrt(4)×ln(1)×log(1)×2^3");
         assertEquals("0", calculator.calculate());
     }
 
     @Test
     void testLongExpression3() {
-        Calculator calculator = new Calculator("sin(0)-cos(0)-tan(0)-sqrt(4)-ln(1)-log(1)-2^3");
-        assertEquals("-10", calculator.calculate());
+        calculator.setExpression("sin(0)-cos(0)-tan(0)-sqrt(4)-ln(1)-log(1)-2^3");
+        assertEquals("-11", calculator.calculate());
     }
 
     @Test
     void testLongExpression4() {
-        Calculator calculator = new Calculator("sin(0)/cos(0)/tan(0)/sqrt(4)/ln(1)/log(1)/2^3");
+        calculator.setExpression("sin(0)/cos(0)/tan(0)/sqrt(4)/ln(1)/log(1)/2^3");
         assertEquals("Math Error , [AC] : Cancel", calculator.calculate());
     }
 
     @Test
     void testLongExpression5() {
-        Calculator calculator = new Calculator("sin(0)+cos(0)×tan(0)-sqrt(4)/ln(1)+log(1)-2^3");
-        assertEquals("-6", calculator.calculate());
-    }
+        calculator.setExpression("sin(0)+cos(0)×tan(0)-sqrt(4)/ln(1)+log(1)-2^3");
+        assertEquals("Math Error , [AC] : Cancel", calculator.calculate());
+    }//we got -infinity instead of error /ln(1)
 
     @Test
     void testComplexExpression4() {
-        Calculator calculator = new Calculator("(sin(0)+cos(0))/2");
+        calculator.setExpression("(sin(0)+cos(0))/2");
         assertEquals("0.5", calculator.calculate());
     }
 
     @Test
     void testComplexExpression5() {
-        Calculator calculator = new Calculator("sqrt((4+16)/2)");
-        assertEquals("2.8284271247461903", calculator.calculate());
+        calculator.setExpression("sqrt((4+16)/2)");
+        assertEquals("3.1622776601683795", calculator.calculate());
     }
 
     @Test
     void testComplexExpression6() {
-        Calculator calculator = new Calculator("ln((1+1)/(1+1-1))");
+        calculator.setExpression("ln((1+1)/(1+1-1))");
         assertEquals("0.6931471805599453", calculator.calculate());
     }
 
     @Test
     void testComplexExpression7() {
-        Calculator calculator = new Calculator("log(100/(10+10))");
-        assertEquals("1", calculator.calculate());
+        calculator.setExpression("log(100/(10+10))");
+        assertEquals("0.6989700043360189", calculator.calculate());
     }
 
     @Test
     void testComplexExpression8() {
-        Calculator calculator = new Calculator("(2^3)/(4-2)");
+        calculator.setExpression("(2^3)/(4-2)");
         assertEquals("4", calculator.calculate());
     }
 
     @Test
     void testComplexExpression9() {
-        Calculator calculator = new Calculator("((sin(0)+cos(0))×tan(0))/sqrt(4)");
+        calculator.setExpression("((sin(0)+cos(0))×tan(0))/sqrt(4)");
         assertEquals("0", calculator.calculate());
     }
 
     @Test
     void testComplexExpression10() {
-        Calculator calculator = new Calculator("ln(1/((1+1)-1))");
-        assertEquals("Math Error , [AC] : Cancel", calculator.calculate());
+        calculator.setExpression("ln(1/((1+1)-1))");
+        assertEquals("0", calculator.calculate());
     }
+
+    @Test
+    void testVeryComplexExpression1() {
+        calculator.setExpression("tan(4 + sin(4)) + 2^(sin(3^2))");
+        assertEquals("1.4325942606234885", calculator.calculate());
+    }
+
+    @Test
+    void testVeryComplexExpression2() {
+        calculator.setExpression("cos(27 + sqrt(5)) / ln(1 + 4 + sqrt(7))");
+        assertEquals("-0.28124697664869", calculator.calculate());
+    }
+
+    @Test
+    void testVeryComplexExpression3() {
+        calculator.setExpression("sin(4 + cos(3)) / (1 + cos(3) + sqrt(3))");
+        assertEquals("0.07531651081592326", calculator.calculate());
+    }
+
+    @Test
+    void testVeryComplexExpression4() {
+        calculator.setExpression("ln(sin(3) + tan(54)) × tan(7^(sqrt(2)))");
+        assertEquals("0.007181043111533832", calculator.calculate());
+    }
+
+    @Test
+    void testVeryComplexExpression5() {
+        calculator.setExpression("cos(ln(3) + sin(4)) / tan(5 + sqrt(5))");
+        assertEquals("0.6696460076786583", calculator.calculate());
+    }
+
 }

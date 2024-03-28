@@ -8,44 +8,112 @@ public class Calculator {
     private static Calculator instance;
     private CalculatorGUI calculatorGUI; // CalculatorGUI instance
     public static String text = "";
-    public static String Ans = null;
+    public static String Ans = "";
+    public static int count = 1;
 
-    // Private constructor to prevent instantiation from outside
-    Calculator(String txt) {
+    /**
+     * Private constructor to prevent instantiation from outside.
+     * Initializes necessary variables.
+     * @param txt The initial text for the calculator.
+     */    private Calculator(String txt) {
         // Initialize any necessary variables here
+        System.out.println("Calculator started!");
         text = txt;
     }
 
-    // Public method to get the singleton instance
-    public static Calculator getInstance() {
+    /**
+     * Public method to get the singleton instance of the calculator.
+     * If the instance is null, a new instance is created.
+     * @param s The expression to be set for the calculator.
+     * @return The singleton instance of the calculator.
+     */    public static Calculator getInstance(String s) {
         if (instance == null) {
-            instance = new Calculator(getText());
+            instance = new Calculator(text);
         }
+        instance.setExpression(s);
         return instance;
     }
 
-    private static String getText() {
+    /**
+     * Getter for the text of the calculator.
+     * @return The current text of the calculator.
+     */
+    private String getText() {
         return text;
     }
 
-
+    /**
+     * Getter for the last answer of the calculator.
+     * @return The last answer of the calculator.
+     */
     public String lastAns(){
         return Ans;
     }
 
+    /**
+     * This method calculates the result of the current expression.
+     * It first replaces any "Ans" in the text with the last answer.
+     * Then it checks if the expression is valid.
+     * If it is, it parses the expression into elements, evaluates it, and sets the answer.
+     * If the result is "Infinity", "NaN", or "-Infinity", it returns a math error.
+     * @return The result of the calculation, or a math error message.
+     */
     public String calculate() {
+        replaceAnsInText();
+        String tmp = text;
         if(!isValid(text)){
             return "Math Error , [AC] : Cancel";
         }
+
         ArrayList<String> elements = parseExpression(text);
-        //printElements(elements);
+
         text = evaluate(elements);
-        Ans = text;
+        if(text.equals("Infinity") || text.equals("NaN") || text.equals("-Infinity")){
+            return "Math Error , [AC] : Cancel";
+        }
+        if(!text.equals("")) {
+            Ans = text;
+            System.out.println("Equation No " + count++ +": " + tmp + " = " + Ans);
+
+        }
         return text;
     }
 
+    /**
+     * This method replaces any "Ans" in the text with the last answer.
+     */
+    public void replaceAnsInText() {
+        if (Ans != null) {
+            text = text.replace("Ans", Ans);
+        }
+    }
 
-    //using shunting yard algorithm to evaluate the expression
+    /**
+     * This method checks if a given string is an operator.
+     * @param s The string to check.
+     * @return true if the string is an operator, false otherwise.
+     */    public static boolean isOperator(String s) {
+        return s.equals("+") || s.equals("-") || s.equals("×") || s.equals("/") || s.equals("^")
+                || Objects.equals(s, "(") || Objects.equals(s, ")");
+    }
+
+
+    /**
+     * This method checks if a given string is a function.
+     * @param s The string to check.
+     * @return true if the string is a function, false otherwise.
+     */
+    public static boolean isFunction(String s) {
+        return s.equals("sin") || s.equals("cos") || s.equals("tan") || s.equals("sqrt") || s.equals("ln") || s.equals("log");
+    }
+
+    /**
+     * This method evaluates a given mathematical expression.
+     * It uses the shunting yard algorithm to convert the expression to Reverse Polish Notation (RPN),
+     * and then evaluates the RPN expression.
+     * @param expression The mathematical expression to evaluate.
+     * @return The result of the evaluation.
+     */
     public static String evaluate(ArrayList<String> expression) {
         if (expression.isEmpty()) {
             return "";
@@ -55,7 +123,7 @@ public class Calculator {
         LinkedList<String> output = new LinkedList<>();
 
         for (String s : expression) {
-            if (!isOperator(s)) {
+            if (!isOperator(s) && !isFunction(s)) {
                 output.add(s);
             } else if (s.equals("(")) {
                 stack.push(s);
@@ -66,8 +134,8 @@ public class Calculator {
                 if (!stack.isEmpty()) {
                     stack.pop();
                 }
-            } else if (isOperator(s)) {
-                while (!stack.isEmpty() && isOperator(stack.peek()) && (precedence(s) <= precedence(stack.peek()))) {
+            } else if (isOperator(s) || isFunction(s)) {
+                while (!stack.isEmpty() && (isOperator(stack.peek()) || isFunction(stack.peek())) && (precedence(s) <= precedence(stack.peek()))) {
                     output.add(stack.pop());
                 }
                 stack.push(s);
@@ -77,83 +145,75 @@ public class Calculator {
         while (!stack.isEmpty()) {
             output.add(stack.pop());
         }
+        output.removeIf(s -> s.equals("(") || s.equals(")"));
 
-//        //if there is a division by 0 then return error
-//        for (int i = output.size() - 1; i > 0 ; i--) {
-//            if (output.get(i).equals("/")) {
-//                if (output.get(i -1).equals("0")) {
-//                    return "Math Error , [AC] : Cancel";
-//                }
-//            }
-//        }
+        return calculateRPN(output);
+    }
 
-        Stack<Double> resultStack = new Stack<>();
-        while (!output.isEmpty()) {
-            String token = output.poll();
-            if (!isOperator(token)) {
-                resultStack.push(Double.parseDouble(token));
+    /**
+     * This method calculates the result of a given Reverse Polish Notation (RPN) expression.
+     * @param rpn The RPN expression to calculate.
+     * @return The result of the calculation.
+     */
+    public static String calculateRPN(LinkedList<String> rpn) {
+        Stack<Double> stack = new Stack<>();
+
+        System.out.println(rpn);
+
+        while (!rpn.isEmpty()) {
+            String token = rpn.poll();
+            if (!isOperator(token) && !isFunction(token)) {
+                stack.push(Double.parseDouble(token));
             } else {
-                double a = resultStack.pop();
+                double a = stack.pop();
                 double b;
                 switch (token) {
                     case "+":
-                        b = resultStack.pop();
-                        resultStack.push(a + b);
+                        b = stack.pop();
+                        stack.push(a + b);
                         break;
                     case "-":
-                        b = resultStack.pop();
-                        resultStack.push(b - a);
+                        b = stack.pop();
+                        stack.push(b - a);
                         break;
                     case "×":
-                        b = resultStack.pop();
-                        resultStack.push(a * b);
+                        b = stack.pop();
+                        stack.push(a * b);
                         break;
                     case "/":
-                        b = resultStack.pop();
-                        resultStack.push(b / a);
-                        break;
-                    case "^":
-                        b = resultStack.pop();
-                        resultStack.push(Math.pow(b, a));
-                        break;
-                    case "sin":
-                        resultStack.push(Math.sin(a));
-                        break;
-                    case "cos":
-                        resultStack.push(Math.cos(a));
-                        break;
-                    case "tan":
-                        resultStack.push(Math.tan(a));
-                        break;
-                    case "sqrt":
-                        resultStack.push(Math.sqrt(a));
-                        break;
-                    case "ln":
-                        resultStack.push(Math.log(a));
-                        break;
-                    case "log":
-                        resultStack.push(Math.log10(a));
-                        break;
-                }
-            }
-
-
-            for (int i = 0; i < stack.size(); i++) {
-                String tmp = stack.get(i);
-                if (tmp.equals("/")) {
-                    if (i + 1 < stack.size()) {
-                        String nextToken = stack.get(i + 1);
-                        if (nextToken.equals("0") || nextToken.equals("sin 0") || nextToken.equals("cos π/2") || nextToken.equals("tan π/2") || nextToken.equals("ln 1") || nextToken.equals("log₁₀ 1")) {
+                        b = stack.pop();
+                        if (a == 0) {
                             return "Math Error , [AC] : Cancel";
                         }
-                    }
+                        stack.push(b / a);
+                        break;
+                    case "^":
+                        b = stack.pop();
+                        stack.push(Math.pow(b, a));
+                        break;
+                    case "sin":
+                        stack.push(Math.sin(a));
+                        break;
+                    case "cos":
+                        stack.push(Math.cos(a));
+                        break;
+                    case "tan":
+                        stack.push(Math.tan(a));
+                        break;
+                    case "sqrt":
+                        stack.push(Math.sqrt(a));
+                        break;
+                    case "ln":
+                        stack.push(Math.log(a));
+                        break;
+                    case "log":
+                        stack.push(Math.log10(a));
+                        break;
                 }
             }
-
         }
 
-        //if the number is a form of x.0 then convert it to x else keep it as it is
-        double result = resultStack.pop();
+        double result = stack.pop();
         if (result % 1 == 0) {
             return String.valueOf(result).substring(0, String.valueOf(result).length() - 2);
         } else {
@@ -161,10 +221,20 @@ public class Calculator {
         }
     }
 
+    /**
+     * This method converts a Double to an int.
+     * @param peek The Double to convert.
+     * @return The int value of the Double.
+     */
     private static int intValue(Double peek) {
         return (int)(double)peek;
     }
 
+    /**
+     * This method returns the precedence of a given operator.
+     * @param operator The operator to check.
+     * @return The precedence of the operator.
+     */
     public static int precedence(String operator) {
         return switch (operator) {
             case "+", "-" -> 1;
@@ -175,9 +245,15 @@ public class Calculator {
         };
     }
 
+    /**
+     * This method parses a given mathematical expression into its constituent elements.
+     * @param text The mathematical expression to parse.
+     * @return An ArrayList of the elements of the expression.
+     */
     public static ArrayList<String> parseExpression(String text) {
         ArrayList<String> elements = new ArrayList<>();
-        Pattern pattern = Pattern.compile("\\d+\\.?\\d*|[-+×/^()]|\\b(sin|cos|tan|sqrt|ln|log)\\b|\\(");        Matcher matcher = pattern.matcher(text);
+        Pattern pattern = Pattern.compile("\\d+\\.?\\d*|[-+×/^()]|\\b(sin|cos|tan|sqrt|ln|log)\\b|\\(");
+        Matcher matcher = pattern.matcher(text);
 
         while (matcher.find()) {
             elements.add(matcher.group());
@@ -186,8 +262,10 @@ public class Calculator {
         return elements;
     }
 
-    //function to print the elements of the arraylist
-    public static void printElements(ArrayList<String> elements) {
+    /**
+     * This method prints the elements of a given ArrayList.
+     * @param elements The ArrayList to print.
+     */    public static void printElements(ArrayList<String> elements) {
         System.out.println(text);
         for (String element : elements) {
             System.out.println(element);
@@ -195,14 +273,6 @@ public class Calculator {
     }
 
 
-    //function to check if the character is an operator
-    public static boolean isOperator(String c) {
-        return Objects.equals(c, "sin") || Objects.equals(c, "cos") || Objects.equals(c, "tan") ||
-                Objects.equals(c, "sqrt") || Objects.equals(c, "log") || Objects.equals(c, "ln") ||
-                 Objects.equals(c, "+") || Objects.equals(c, "-") || Objects.equals(c, "×") ||
-                Objects.equals(c, "/") || Objects.equals(c, "^")
-                || Objects.equals(c, "(") || Objects.equals(c, ")");
-    }
     /**
      * This method checks if the given mathematical expression is valid.
      * It checks for the following conditions:
@@ -250,15 +320,15 @@ public class Calculator {
                     return false;
                 }
             } else if (c == 's' || c == 'c' || c == 't') {
-                if (i + 3 < currentText.length() && isOperator(currentText.substring(i, i + 2))) {
+                if (i + 3 < currentText.length() && isFunction(currentText.substring(i, i + 2))) {
                     return false;
                 }
             } else if (c == 'l') {
                 if (currentText.charAt(i+1) == 'o') {
-                    if (i + 2 < currentText.length() && isOperator(currentText.substring(i, i + 1))) {
+                    if (i + 2 < currentText.length() && isFunction(currentText.substring(i, i + 1))) {
                         return false;
                     } else if(currentText.charAt(i+1) == 'o'){
-                        if (i + 1 < currentText.length() && isOperator(currentText.substring(i, i))) {
+                        if (i + 1 < currentText.length() && isFunction(currentText.substring(i, i))) {
                             return false;
                         }
                     }
@@ -269,12 +339,28 @@ public class Calculator {
     }
 
 
-
+    /**
+     * This method converts a double to a String.
+     * @param number The double to convert.
+     * @return The String representation of the double.
+     */
     public String toString(double number) {
         return Double.toString(number);
     }
-
+    /**
+     * This method converts a String to an int.
+     * @param number The String to convert.
+     * @return The int value of the String.
+     */
     public int toInt(String number) {
         return Integer.parseInt(number);
+    }
+
+    /**
+     * This method sets the expression of the calculator.
+     * @param s The expression to set.
+     */
+    public void setExpression(String s) {
+        text = s;
     }
 }
